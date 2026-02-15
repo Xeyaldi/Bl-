@@ -111,7 +111,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     # Sənin Real Tokenin
-    TOKEN = "8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY"
+    TOKEN = os.environ.get("8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY")
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
