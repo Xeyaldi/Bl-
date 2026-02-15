@@ -1,16 +1,16 @@
-import logging
-import os
 import sys
+from types import ModuleType
 
-# --- HEROKU PYTHON 3.13+ XƏTASI ÜÇÜN YAMAQ (BUNA TOXUNMA) ---
+# --- HEROKU PYTHON 3.13+ XƏTASI ÜÇÜN YAMAQ (Hec nəyi silmədən əlavə edildi) ---
 try:
     import imghdr
 except ImportError:
-    from types import ModuleType
     imghdr = ModuleType('imghdr')
     sys.modules['imghdr'] = imghdr
-# ---------------------------------------------------------
+# -------------------------------------------------------------------------
 
+import logging
+import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -78,7 +78,7 @@ async def help_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await query.message.edit_text(help_text)
     else:
-        await query.answer("❌ ʙᴜunᴜ ꜱᴀᴅəᴄə ᴀᴅᴍɪɴʟəʀ ɢöʀə ʙɪʟəʀ!", show_alert=True)
+        await query.answer("❌ ʙᴜɴᴜ ꜱᴀᴅəᴄə ᴀᴅᴍɪɴʟəʀ ɢöʀə ʙɪʟəʀ!", show_alert=True)
 
 async def add_banned_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id == BOT_OWNER_ID and context.args:
