@@ -4,17 +4,14 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
 # --- AYARLAR ---
-# ⚠️ BOT SAHİBİNİN ID-Sİ
 BOT_OWNER_ID = 8024893255 
 
-# Söyüş Bazası (Heç nə silinmədi)
 BANNED_WORDS = [
     "bic", "gic", "peyser", "qodu", "ogras", "fahişe", "sherefsiz", "exlaqsiz", "gicbeser", "meymun", "andira", "zibil", "itoglu", "alcaq", "sherefsiz", "arsiz", "namussuz", "qancıq", "ogras", "tulku", "paxıl", "iyrenc", "mal", "eşşek", "it", "donuz", "heyvan", "qaltax", "qehbe", "bicinbalasi", "soxum", "var-yox", "nəsil", "itoglu", "itqizi", "gicbəsər", "kütbeyin", "şərəfsiz", "ləyaqətsiz", "mənliysiz", "namussuz", "abırsız", "həyasız", "üzsüz", "tərbiyəsiz", "mərifətsiz", "insafsız", "vicdansız", "itbalası", "donuzbalası", "yalançı", "fırıldaqçı", "oğru", "alçaq", "rəzil", "iyrənc", "murdar", "axmaq", "sarsaq", "ədəbsiz", "əxlaqsız", "pozğun", "nadan", "cahil", "qanmaz", "beyinsiz", "gicgah", "xiyar", "balqabaq", "qoyun", "keçi", "eşşək", "vəhşi", "itil", "rəddol"
 ]
 
 settings = {"all_stickers_off": False}
 
-# --- YOXLAYICI FUNKSİYALAR ---
 async def is_creator(update: Update):
     if update.effective_chat.type == "private": return False
     member = await update.effective_chat.get_member(update.effective_user.id)
@@ -25,7 +22,6 @@ async def is_admin(update: Update):
     member = await update.effective_chat.get_member(update.effective_user.id)
     return member.status in ['administrator', 'creator']
 
-# --- KOMANDALAR ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = (
@@ -92,12 +88,10 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if not msg or not msg.from_user: return
     user = update.effective_user
-
     if settings["all_stickers_off"] and (msg.sticker or msg.animation):
         try: await msg.delete()
         except: pass
         return
-
     if msg.text:
         text_lower = msg.text.lower()
         for word in BANNED_WORDS:
@@ -110,6 +104,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 def main():
+    # Sənin Tokenin
     TOKEN = "8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY"
     app = Application.builder().token(TOKEN).build()
 
@@ -120,7 +115,6 @@ def main():
     app.add_handler(CommandHandler("qadaga", add_banned_word))
     app.add_handler(CallbackQueryHandler(help_callback, pattern="show_help"))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_messages))
-
     app.run_polling()
 
 if __name__ == "__main__":
