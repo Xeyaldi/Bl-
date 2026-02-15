@@ -12,6 +12,8 @@ BANNED_WORDS = [
 
 settings = {"all_stickers_off": False}
 
+# --- FUNKSİYALAR (Sən istəyən hər şey buradadır) ---
+
 async def is_creator(update: Update):
     if update.effective_chat.type == "private": return False
     member = await update.effective_chat.get_member(update.effective_user.id)
@@ -88,10 +90,14 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if not msg or not msg.from_user: return
     user = update.effective_user
+    
+    # Stiker filteri
     if settings["all_stickers_off"] and (msg.sticker or msg.animation):
         try: await msg.delete()
         except: pass
         return
+        
+    # Söyüş filteri (Tağ etmə daxil)
     if msg.text:
         text_lower = msg.text.lower()
         for word in BANNED_WORDS:
@@ -104,7 +110,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 def main():
-    # Sənin Tokenin
+    # Sənin Real Tokenin
     TOKEN = "8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY"
     app = Application.builder().token(TOKEN).build()
 
@@ -115,6 +121,7 @@ def main():
     app.add_handler(CommandHandler("qadaga", add_banned_word))
     app.add_handler(CallbackQueryHandler(help_callback, pattern="show_help"))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_messages))
+
     app.run_polling()
 
 if __name__ == "__main__":
