@@ -1,5 +1,16 @@
 import logging
 import os
+import sys
+
+# --- HEROKU PYTHON 3.13+ XƏTASI ÜÇÜN YAMAQ (BUNA TOXUNMA) ---
+try:
+    import imghdr
+except ImportError:
+    from types import ModuleType
+    imghdr = ModuleType('imghdr')
+    sys.modules['imghdr'] = imghdr
+# ---------------------------------------------------------
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -12,7 +23,7 @@ BANNED_WORDS = [
 
 settings = {"all_stickers_off": False}
 
-# --- FUNKSİYALAR (Sən istəyən hər şey buradadır) ---
+# --- FUNKSİYALAR ---
 
 async def is_creator(update: Update):
     if update.effective_chat.type == "private": return False
@@ -67,7 +78,7 @@ async def help_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await query.message.edit_text(help_text)
     else:
-        await query.answer("❌ ʙᴜɴᴜ ꜱᴀᴅəᴄə ᴀᴅᴍɪɴʟəʀ ɢöʀə ʙɪʟəʀ!", show_alert=True)
+        await query.answer("❌ ʙᴜunᴜ ꜱᴀᴅəᴄə ᴀᴅᴍɪɴʟəʀ ɢöʀə ʙɪʟəʀ!", show_alert=True)
 
 async def add_banned_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id == BOT_OWNER_ID and context.args:
@@ -97,7 +108,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except: pass
         return
         
-    # Söyüş filteri (Tağ etmə daxil)
+    # Söyüş filteri
     if msg.text:
         text_lower = msg.text.lower()
         for word in BANNED_WORDS:
@@ -110,7 +121,6 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 def main():
-    # Sənin Real Tokenin
     TOKEN = "8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY"
     app = Application.builder().token(TOKEN).build()
 
