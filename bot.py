@@ -15,23 +15,21 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 
 # --- AYARLAR ---
 BOT_OWNER_ID = 8024893255 
-# Sənin göndərdiyin stiker ID-si:
 START_STICKER_ID = "CAACAgQAAxkBAAEQhcppkc-7kbd_oDn4S9MV6T5vv-TL9AACQhgAAiRYeVGtiXa89ZuMAzoE"
 
 BANNED_WORDS = [
     "bic", "gic", "peyser", "qodu", "ogras", "fahişe", "sherefsiz", "exlaqsiz", "gicbeser", "meymun", "andira", "zibil", "itoglu", "alcaq", "sherefsiz", "arsiz", "namussuz", "qancıq", "ogras", "tulku", "paxıl", "iyrenc", "mal", "eşşek", "it", "donuz", "heyvan", "qaltax", "qehbe", "bicinbalasi", "soxum", "var-yox", "nəsil", "itoglu", "itqizi", "gicbəsər", "kütbeyin", "şərəfsiz", "ləyaqətsiz", "mənliysiz", "namussuz", "abırsız", "həyasız", "üzsüz", "tərbiyəsiz", "mərifətsiz", "insafsız", "vicdansız", "itbalası", "donuzbalası", "yalançı", "fırıldaqçı", "oğru", "alçaq", "rəzil", "iyrənc", "murdar", "axmaq", "sarsaq", "ədəbsiz", "əxlaqsız", "pozğun", "nadan", "cahil", "qanmaz", "beyinsiz", "gicgah", "xiyar", "balqabaq", "qoyun", "keçi", "eşşək", "vəhşi", "itil", "rəddol"
 ]
 
-# Hər qrup üçün kilid vəziyyətini yadda saxlayan lüğət
 group_locks = {}
 
 async def post_init(application: Application):
+    # /qadaga menyudan silindi
     commands = [
         BotCommand("start", "ʙᴏᴛᴜ ʙᴀşʟᴀᴅıɴ"),
         BotCommand("help", "ᴋöᴍəᴋ ᴍᴇɴʏᴜꜱᴜ"),
         BotCommand("on", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)"),
-        BotCommand("off", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"),
-        BotCommand("qadaga", "ꜱöʏÜş Əʟᴀᴠə ᴇᴛ (Sᴀʜɪʙ)")
+        BotCommand("off", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)")
     ]
     await application.bot.set_my_commands(commands)
 
@@ -43,14 +41,9 @@ async def is_creator(update: Update):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat_id = update.effective_chat.id
-    
-    # Mesaja 🗿 reaksiyası verir
     try: await update.message.set_reaction(reaction="🗿")
     except: pass
-
-    # Sənin stikerini göndərir
-    try:
-        await context.bot.send_sticker(chat_id=chat_id, sticker=START_STICKER_ID)
+    try: await context.bot.send_sticker(chat_id=chat_id, sticker=START_STICKER_ID)
     except: pass
 
     text = (
@@ -79,7 +72,7 @@ async def stiker_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
         return
     group_locks[update.effective_chat.id] = True
-    await update.message.reply_text("🚫 **ʙᴜ ǫʀᴜᴘᴅᴀ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ǫᴀᴅᴀɢᴀɴ ᴇᴅɪʟᴅɪ!**", parse_mode="Markdown")
+    await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**", parse_mode="Markdown")
 
 async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
@@ -89,20 +82,18 @@ async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
         return
     group_locks[update.effective_chat.id] = False
-    await update.message.reply_text("✅ **ʙᴜ ǫʀᴜᴘᴅᴀ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**", parse_mode="Markdown")
+    await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**", parse_mode="Markdown")
 
 async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if not msg or not msg.from_user: return
     chat_id = update.effective_chat.id
     
-    # Qrup kilidlidirsə həm stiker, həm də gif silinsin
     if group_locks.get(chat_id, False) and (msg.sticker or msg.animation):
         try: await msg.delete()
         except: pass
         return
 
-    # Söyüş filteri
     if msg.text:
         text_lower = msg.text.lower()
         for word in BANNED_WORDS:
@@ -115,6 +106,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 async def add_banned_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Bu funksiya yerində qalır, help-də yoxdur amma işləyir
     if update.effective_user.id != BOT_OWNER_ID:
         await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ʙᴏᴛ ꜱᴀʜɪʙɪ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
         return
@@ -126,14 +118,20 @@ async def add_banned_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ\n🔹 /qadaga - ꜱöʏÜş Əʟᴀᴠə ᴇᴛ"
+    # Help menyusundan qadağa silindi
+    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
     await query.message.edit_text(help_text, parse_mode="Markdown")
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
+    await update.message.reply_text(help_text, parse_mode="Markdown")
 
 def main():
     TOKEN = "8563159860:AAHpQrxwu4C1DyTgtxcgSrzl6kHUonmD6rY"
     app = Application.builder().token(TOKEN).post_init(post_init).build()
     
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("on", stiker_on))
     app.add_handler(CommandHandler("off", stiker_off))
     app.add_handler(CommandHandler("qadaga", add_banned_word))
@@ -143,4 +141,4 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    main() 
+    main()
