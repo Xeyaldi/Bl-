@@ -17,9 +17,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 BOT_OWNER_ID = 8024893255 
 START_STICKER_ID = "CAACAgQAAxkBAAEQhcppkc-7kbd_oDn4S9MV6T5vv-TL9AACQhgAAiRYeVGtiXa89ZuMAzoE"
 
-BANNED_WORDS = [
-    "bic", "gic", "peyser", "qodu", "ogras", "fahişe", "sherefsiz", "exlaqsiz", "gicbeser", "meymun", "andira", "zibil", "itoglu", "alcaq", "sherefsiz", "arsiz", "namussuz", "qancıq", "ogras", "tulku", "paxıl", "iyrenc", "mal", "eşşek", "it", "donuz", "heyvan", "qaltax", "qehbe", "bicinbalasi", "soxum", "var-yox", "nəsil", "itoglu", "itqizi", "gicbəsər", "kütbeyin", "şərəfsiz", "ləyaqətsiz", "mənliysiz", "namussuz", "abırsız", "həyasız", "üzsüz", "tərbiyəsiz", "mərifətsiz", "insafsız", "vicdansız", "itbalası", "donuzbalası", "yalançı", "fırıldaqçı", "oğru", "alçaq", "rəzil", "iyrənc", "murdar", "axmaq", "sarsaq", "ədəbsiz", "əxlaqsız", "pozğun", "nadan", "cahil", "qanmaz", "beyinsiz", "gicgah", "xiyar", "balqabaq", "qoyun", "keçi", "eşşək", "vəhşi", "itil", "rəddol"
-]
+# Siyahı boşdur, özün əlavə edəcəksən
+BANNED_WORDS = []
 
 group_locks = {}
 
@@ -41,6 +40,9 @@ async def is_creator(update: Update):
 
 async def pisseyler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != BOT_OWNER_ID: return
+    if not BANNED_WORDS:
+        await update.message.reply_text("Siyahı hazırda boşdur.")
+        return
     siyahı = ", ".join(BANNED_WORDS)
     await update.message.reply_text(f"🚫 **Qeyd olunan söyüşlər:**\n\n{siyahı}")
 
@@ -57,21 +59,35 @@ async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def pissozplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != BOT_OWNER_ID: return
     if not context.args:
-        await update.message.reply_text("İstifadə: `/pissozplus söyüş`", parse_mode="Markdown")
+        await update.message.reply_text("İstifadə: `/pissozplus söz1 söz2 ...` (Boşluqla ayıraraq çoxlu söz yazın)")
         return
-    word = " ".join(context.args).lower()
-    if word not in BANNED_WORDS:
-        BANNED_WORDS.append(word)
-        await update.message.reply_text(f"✅ '{word}' siyahıya əlavə edildi.")
-    else:
-        await update.message.reply_text("Bu söz artıq siyahıda var.")
+    
+    added_words = []
+    already_exists = []
+    
+    for word in context.args:
+        word = word.lower()
+        if word not in BANNED_WORDS:
+            BANNED_WORDS.append(word)
+            added_words.append(word)
+        else:
+            already_exists.append(word)
+    
+    response = ""
+    if added_words:
+        response += f"✅ **Əlavə edildi:** {', '.join(added_words)}\n"
+    if already_exists:
+        response += f"⚠️ **Zatən var idi:** {', '.join(already_exists)}"
+        
+    await update.message.reply_text(response, parse_mode="Markdown")
 
 async def deleteqeyd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != BOT_OWNER_ID: return
     if not context.args:
-        await update.message.reply_text("İstifadə: `/deleteqeyd söyüş`", parse_mode="Markdown")
+        await update.message.reply_text("İstifadə: `/deleteqeyd söz` (Siyahıdan silmək üçün)")
         return
-    word = " ".join(context.args).lower()
+    
+    word = context.args[0].lower()
     if word in BANNED_WORDS:
         BANNED_WORDS.remove(word)
         await update.message.reply_text(f"🗑️ '{word}' siyahıdan silindi.")
@@ -94,7 +110,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🚀 ᴘʀᴏꜰᴇꜱɪʏᴏɴᴀʟ ᴍᴏᴅᴇʀᴀᴛᴏʀ ʙᴏᴛᴀᴍ.\n\n"
         f"💎 **ɴə ᴇᴅə ʙɪʟəʀəᴍ?**\n"
         f"└─ ꜱöʏÜşʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ ᴛəᴍɪᴢʟəʏɪʀəᴍ\n"
-        f"└─ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀıᴍ\n\n"
+        f"└─ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
         f"⚙️ *ʙᴏᴛᴜ ɪşʟəᴛᴍəᴋ ÜÇÜɴ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪʙ ᴀᴅᴍɪɴ ᴠᴇʀɪɴ!*"
     )
     keyboard = [
@@ -123,7 +139,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "👑 **ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:**\n\n"
             "🔹 /pisseyler - Söyüş siyahısını gör\n"
             "🔹 /mesajisil - Reply atılan mesajı sil\n"
-            "🔹 /pissozplus - Siyahıya söyüş əlavə et\n"
+            "🔹 /pissozplus - Çoxlu söyüş əlavə et\n"
             "🔹 /deleteqeyd - Siyahıdan söyüş sil"
         )
         await query.message.edit_text(owner_text, parse_mode="Markdown")
@@ -135,20 +151,20 @@ async def stiker_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
         return
     group_locks[update.effective_chat.id] = True
-    await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**", parse_mode="Markdown")
+    await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**")
 
 async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
         return
     group_locks[update.effective_chat.id] = False
-    await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**", parse_mode="Markdown")
+    await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**")
 
 async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -184,7 +200,6 @@ def main():
     app.add_handler(CommandHandler("on", stiker_on))
     app.add_handler(CommandHandler("off", stiker_off))
     
-    # Owner Komandaları
     app.add_handler(CommandHandler("pisseyler", pisseyler))
     app.add_handler(CommandHandler("mesajisil", mesajisil))
     app.add_handler(CommandHandler("pissozplus", pissozplus))
