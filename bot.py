@@ -24,7 +24,6 @@ BANNED_WORDS = [
 group_locks = {}
 
 async def post_init(application: Application):
-    # /qadaga menyudan silindi
     commands = [
         BotCommand("start", "ʙᴏᴛᴜ ʙᴀşʟᴀᴅıɴ"),
         BotCommand("help", "ᴋöᴍəᴋ ᴍᴇɴʏᴜꜱᴜ"),
@@ -37,6 +36,49 @@ async def is_creator(update: Update):
     if update.effective_chat.type == "private": return True
     member = await update.effective_chat.get_member(update.effective_user.id)
     return member.status == 'creator'
+
+# --- YENİ OWNER KOMANDALARI ---
+
+async def pisseyler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != BOT_OWNER_ID: return
+    siyahı = ", ".join(BANNED_WORDS)
+    await update.message.reply_text(f"🚫 **Qeyd olunan söyüşlər:**\n\n{siyahı}")
+
+async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != BOT_OWNER_ID: return
+    if not update.message.reply_to_message:
+        await update.message.reply_text("Silmək üçün bir mesaja reply (cavab) atın.")
+        return
+    try:
+        await update.message.reply_to_message.delete()
+        await update.message.delete()
+    except: pass
+
+async def pissözplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != BOT_OWNER_ID: return
+    if not context.args:
+        await update.message.reply_text("İstifadə: `/pissözplus söyüş`", parse_mode="Markdown")
+        return
+    word = " ".join(context.args).lower()
+    if word not in BANNED_WORDS:
+        BANNED_WORDS.append(word)
+        await update.message.reply_text(f"✅ '{word}' siyahıya əlavə edildi.")
+    else:
+        await update.message.reply_text("Bu söz artıq siyahıda var.")
+
+async def deleteqeyd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != BOT_OWNER_ID: return
+    if not context.args:
+        await update.message.reply_text("İstifadə: `/deleteqeyd söyüş`", parse_mode="Markdown")
+        return
+    word = " ".join(context.args).lower()
+    if word in BANNED_WORDS:
+        BANNED_WORDS.remove(word)
+        await update.message.reply_text(f"🗑️ '{word}' siyahıdan silindi.")
+    else:
+        await update.message.reply_text("Bu söz siyahıda tapılmadı.")
+
+# --- START VƏ BUTONLAR ---
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -57,6 +99,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     keyboard = [
         [InlineKeyboardButton("📚 ᴋᴏᴍᴀɴᴅᴀʟᴀʀ ᴠə ᴋöᴍəᴋ", callback_data="show_help")],
+        [InlineKeyboardButton("👑 ꜱᴀʜɪʙ ᴋᴏᴍᴜᴛʟᴀʀı", callback_data="owner_menu")],
         [InlineKeyboardButton("👨‍💻 ꜱᴀʜɪʙ", url="https://t.me/kullaniciadidi")],
         [InlineKeyboardButton("➕ ᴍəɴɪ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪɴ", url=f"https://t.me/{context.bot.username}?startgroup=true")],
         [InlineKeyboardButton("📢 ʙᴏᴛ ᴋᴀɴᴀʟı", url="https://t.me/ht_bots"),
@@ -64,12 +107,35 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
+async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user_id = query.from_user.id
+    
+    if query.data == "show_help":
+        help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
+        await query.message.edit_text(help_text, parse_mode="Markdown")
+        
+    elif query.data == "owner_menu":
+        if user_id != BOT_OWNER_ID:
+            await query.answer("❌ Bu menyu yalnız bot sahibi üçündür!", show_alert=True)
+            return
+        owner_text = (
+            "👑 **ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:**\n\n"
+            "🔹 /pisseyler - Söyüş siyahısını gör\n"
+            "🔹 /mesajisil - Reply atılan mesajı sil\n"
+            "🔹 /pissözplus - Siyahıya söyüş əlavə et\n"
+            "🔹 /deleteqeyd - Siyahıdan söyüş sil"
+        )
+        await query.message.edit_text(owner_text, parse_mode="Markdown")
+
+# --- DİGƏR FUNKSİYALAR ---
+
 async def stiker_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
         return
     group_locks[update.effective_chat.id] = True
     await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**", parse_mode="Markdown")
@@ -79,7 +145,7 @@ async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
         return
     group_locks[update.effective_chat.id] = False
     await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**", parse_mode="Markdown")
@@ -105,23 +171,6 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except: pass
                 break
 
-async def add_banned_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Bu funksiya yerində qalır, help-də yoxdur amma işləyir
-    if update.effective_user.id != BOT_OWNER_ID:
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ʙᴏᴛ ꜱᴀʜɪʙɪ ÜÇÜɴᴅÜʀ!**", parse_mode="Markdown")
-        return
-    if context.args:
-        word = " ".join(context.args).lower()
-        if word not in BANNED_WORDS:
-            BANNED_WORDS.append(word)
-            await update.message.reply_text(f"✅ '{word}' siyahıya əlavə edildi.")
-
-async def help_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    # Help menyusundan qadağa silindi
-    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
-    await query.message.edit_text(help_text, parse_mode="Markdown")
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
     await update.message.reply_text(help_text, parse_mode="Markdown")
@@ -134,8 +183,15 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("on", stiker_on))
     app.add_handler(CommandHandler("off", stiker_off))
-    app.add_handler(CommandHandler("qadaga", add_banned_word))
-    app.add_handler(CallbackQueryHandler(help_callback, pattern="show_help"))
+    
+    # Owner Komandaları
+    app.add_handler(CommandHandler("pisseyler", pisseyler))
+    app.add_handler(CommandHandler("mesajisil", mesajisil))
+    app.add_handler(CommandHandler("pissözplus", pissözplus))
+    app.add_handler(CommandHandler("deleteqeyd", deleteqeyd))
+    app.add_handler(CommandHandler("qadaga", pissözplus)) # Köhnə funksiyanı saxladım
+    
+    app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_messages))
     
     app.run_polling()
