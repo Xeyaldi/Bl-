@@ -54,10 +54,10 @@ async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.delete()
     except: pass
 
-async def pissözplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def pissozplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != BOT_OWNER_ID: return
     if not context.args:
-        await update.message.reply_text("İstifadə: `/pissözplus söyüş`", parse_mode="Markdown")
+        await update.message.reply_text("İstifadə: `/pissozplus söyüş`", parse_mode="Markdown")
         return
     word = " ".join(context.args).lower()
     if word not in BANNED_WORDS:
@@ -94,7 +94,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🚀 ᴘʀᴏꜰᴇꜱɪʏᴏɴᴀʟ ᴍᴏᴅᴇʀᴀᴛᴏʀ ʙᴏᴛᴀᴍ.\n\n"
         f"💎 **ɴə ᴇᴅə ʙɪʟəʀəᴍ?**\n"
         f"└─ ꜱöʏÜşʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ ᴛəᴍɪᴢʟəʏɪʀəᴍ\n"
-        f"└─ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
+        f"└─ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀıᴍ\n\n"
         f"⚙️ *ʙᴏᴛᴜ ɪşʟəᴛᴍəᴋ ÜÇÜɴ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪʙ ᴀᴅᴍɪɴ ᴠᴇʀɪɴ!*"
     )
     keyboard = [
@@ -123,7 +123,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "👑 **ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:**\n\n"
             "🔹 /pisseyler - Söyüş siyahısını gör\n"
             "🔹 /mesajisil - Reply atılan mesajı sil\n"
-            "🔹 /pissözplus - Siyahıya söyüş əlavə et\n"
+            "🔹 /pissozplus - Siyahıya söyüş əlavə et\n"
             "🔹 /deleteqeyd - Siyahıdan söyüş sil"
         )
         await query.message.edit_text(owner_text, parse_mode="Markdown")
@@ -187,9 +187,8 @@ def main():
     # Owner Komandaları
     app.add_handler(CommandHandler("pisseyler", pisseyler))
     app.add_handler(CommandHandler("mesajisil", mesajisil))
-    app.add_handler(CommandHandler("pissözplus", pissözplus))
+    app.add_handler(CommandHandler("pissozplus", pissozplus))
     app.add_handler(CommandHandler("deleteqeyd", deleteqeyd))
-    app.add_handler(CommandHandler("qadaga", pissözplus)) # Köhnə funksiyanı saxladım
     
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_messages))
