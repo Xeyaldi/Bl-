@@ -14,10 +14,11 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotComm
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
 # --- AYARLAR ---
-BOT_OWNER_ID = 8024893255 
+# İki sahibin ID-si bura əlavə edildi
+OWNERS = [8024893255] # Bura lazım olsa başqa ID-lər də vergüllə əlavə edilə bilər
 START_STICKER_ID = "CAACAgQAAxkBAAEQhcppkc-7kbd_oDn4S9MV6T5vv-TL9AACQhgAAiRYeVGtiXa89ZuMAzoE"
 
-# Siyahı boşdur, özün əlavə edəcəksən
+# Siyahı boşdur
 BANNED_WORDS = []
 
 group_locks = {}
@@ -36,10 +37,14 @@ async def is_creator(update: Update):
     member = await update.effective_chat.get_member(update.effective_user.id)
     return member.status == 'creator'
 
-# --- YENİ OWNER KOMANDALARI ---
+# --- SAHİB YOXLANILMASI ---
+def is_owner(user_id):
+    return user_id in OWNERS
+
+# --- OWNER KOMANDALARI ---
 
 async def pisseyler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != BOT_OWNER_ID: return
+    if not is_owner(update.effective_user.id): return
     if not BANNED_WORDS:
         await update.message.reply_text("Siyahı hazırda boşdur.")
         return
@@ -47,7 +52,7 @@ async def pisseyler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🚫 **Qeyd olunan söyüşlər:**\n\n{siyahı}")
 
 async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != BOT_OWNER_ID: return
+    if not is_owner(update.effective_user.id): return
     if not update.message.reply_to_message:
         await update.message.reply_text("Silmək üçün bir mesaja reply (cavab) atın.")
         return
@@ -57,9 +62,9 @@ async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except: pass
 
 async def pissozplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != BOT_OWNER_ID: return
+    if not is_owner(update.effective_user.id): return
     if not context.args:
-        await update.message.reply_text("İstifadə: `/pissozplus söz1 söz2 ...` (Boşluqla ayıraraq çoxlu söz yazın)")
+        await update.message.reply_text("İstifadə: `/pissozplus söz1 söz2 ...`")
         return
     
     added_words = []
@@ -82,9 +87,9 @@ async def pissozplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(response, parse_mode="Markdown")
 
 async def deleteqeyd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != BOT_OWNER_ID: return
+    if not is_owner(update.effective_user.id): return
     if not context.args:
-        await update.message.reply_text("İstifadə: `/deleteqeyd söz` (Siyahıdan silmək üçün)")
+        await update.message.reply_text("İstifadə: `/deleteqeyd söz`")
         return
     
     word = context.args[0].lower()
@@ -132,8 +137,8 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(help_text, parse_mode="Markdown")
         
     elif query.data == "owner_menu":
-        if user_id != BOT_OWNER_ID:
-            await query.answer("❌ Bu menyu yalnız bot sahibi üçündür!", show_alert=True)
+        if not is_owner(user_id):
+            await query.answer("❌ Bu menyu yalnız bot sahibləri üçündür!", show_alert=True)
             return
         owner_text = (
             "👑 **ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:**\n\n"
