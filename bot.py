@@ -14,38 +14,28 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotComm
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
 # --- AYARLAR ---
-OWNERS = [8024893255] 
+# İki sahibin ID-si bura əlavə edildi
+OWNERS = [8024893255] # Bura lazım olsa başqa ID-lər də vergüllə əlavə edilə bilər
 START_STICKER_ID = "CAACAgQAAxkBAAEQhcppkc-7kbd_oDn4S9MV6T5vv-TL9AACQhgAAiRYeVGtiXa89ZuMAzoE"
 
+# Siyahı boşdur
 BANNED_WORDS = []
 
 group_locks = {}
-# SƏNİN KODUNA ƏLAVƏ OLUNAN YENİ REYESTRLƏR
-voice_locks = {}
-authorized_users = {}
 
 async def post_init(application: Application):
     commands = [
         BotCommand("start", "ʙᴏᴛᴜ ʙᴀşʟᴀᴅıɴ"),
         BotCommand("help", "ᴋöᴍəᴋ ᴍᴇɴʏᴜꜱᴜ"),
         BotCommand("on", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)"),
-        BotCommand("off", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"),
-        BotCommand("seslimesaj", "səsli mesaj on/off"),
-        BotCommand("icaze", "yetki ver")
+        BotCommand("off", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)")
     ]
     await application.bot.set_my_commands(commands)
 
 async def is_creator(update: Update):
     if update.effective_chat.type == "private": return True
-    user_id = update.effective_user.id
-    chat_id = update.effective_chat.id
-    member = await update.effective_chat.get_member(user_id)
-    # Qrup qurucusu, Bot sahibi və ya icazə verilmiş şəxs
-    if member.status == 'creator' or user_id in OWNERS:
-        return True
-    if chat_id in authorized_users and user_id in authorized_users[chat_id]:
-        return True
-    return False
+    member = await update.effective_chat.get_member(update.effective_user.id)
+    return member.status == 'creator'
 
 # --- SAHİB YOXLANILMASI ---
 def is_owner(user_id):
@@ -166,7 +156,7 @@ async def stiker_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **bu komut sadəcə qrup kurucusu istufadə edə bilər**")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
         return
     group_locks[update.effective_chat.id] = True
     await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**")
@@ -176,63 +166,20 @@ async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
         return
     if not await is_creator(update):
-        await update.message.reply_text("❌ **bu komut sadəcə qrup kurucusu istufadə edə bilər**")
+        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
         return
     group_locks[update.effective_chat.id] = False
     await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**")
-
-# YENİ ƏLAVƏ EDİLƏN SESLİMESAJ VƏ İCAZE KOMANDALARI
-async def sesli_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not await is_creator(update):
-        await update.message.reply_text("❌ **bu komut sadəcə qrup kurucusu istufadə edə bilər**")
-        return
-    chat_id = update.effective_chat.id
-    if context.args and context.args[0] == "off":
-        voice_locks[chat_id] = True
-        await update.message.reply_text("🚫 **Səsli mesajlar bağlandı.**")
-    else:
-        voice_locks[chat_id] = False
-        await update.message.reply_text("✅ **Səsli mesajlar açıldı.**")
-
-async def icaze_ver(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    member = await update.effective_chat.get_member(update.effective_user.id)
-    if member.status != 'creator' and not is_owner(update.effective_user.id):
-        await update.message.reply_text("❌ **bu komut sadəcə qrup kurucusu istufadə edə bilər**")
-        return
-    if update.message.reply_to_message:
-        target_id = update.message.reply_to_message.from_user.id
-        if chat_id not in authorized_users: authorized_users[chat_id] = []
-        authorized_users[chat_id].append(target_id)
-        await update.message.reply_text("✅ **İstifadəçiyə yetki verildi.**")
 
 async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if not msg or not msg.from_user: return
     chat_id = update.effective_chat.id
     
-    # LİNK SİLMƏ (NORMAL USERLƏR ÜÇÜN)
-    if (msg.text or msg.caption):
-        content = (msg.text or msg.caption).lower()
-        if any(x in content for x in ["http://", "https://", "t.me/", "www."]):
-            if not await is_creator(update):
-                try: await msg.delete()
-                except: pass
-                return
-
-    # STİKER/GİF SİLMƏ
     if group_locks.get(chat_id, False) and (msg.sticker or msg.animation):
-        if not await is_creator(update):
-            try: await msg.delete()
-            except: pass
-            return
-
-    # SƏSLİ MESAJ SİLMƏ
-    if voice_locks.get(chat_id, False) and (msg.voice or msg.video_note):
-        if not await is_creator(update):
-            try: await msg.delete()
-            except: pass
-            return
+        try: await msg.delete()
+        except: pass
+        return
 
     if msg.text:
         text_lower = msg.text.lower()
@@ -257,8 +204,6 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("on", stiker_on))
     app.add_handler(CommandHandler("off", stiker_off))
-    app.add_handler(CommandHandler("seslimesaj", sesli_toggle))
-    app.add_handler(CommandHandler("icaze", icaze_ver))
     
     app.add_handler(CommandHandler("pisseyler", pisseyler))
     app.add_handler(CommandHandler("mesajisil", mesajisil))
