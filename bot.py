@@ -1,4 +1,4 @@
-import sys
+İmport sys
 from types import ModuleType
 
 # --- HEROKU PYTHON 3.13+ XƏTASI ÜÇÜN YAMAQ ---
@@ -64,7 +64,7 @@ async def pisseyler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Siyahı hazırda boşdur.")
         return
     siyahı = ", ".join(BANNED_WORDS)
-    await update.message.reply_text(f"🚫 **Qeyd olunan söyüşlər:**\n\n{siyahı}")
+    await update.message.reply_text(f"🚫 Qeyd olunan söyüşlər:\n\n{siyahı}")
 
 async def mesajisil(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_owner(update.effective_user.id): return
@@ -95,9 +95,9 @@ async def pissozplus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     response = ""
     if added_words:
-        response += f"✅ **Əlavə edildi:** {', '.join(added_words)}\n"
+        response += f"✅ Əlavə edildi: {', '.join(added_words)}\n"
     if already_exists:
-        response += f"⚠️ **Zatən var idi:** {', '.join(already_exists)}"
+        response += f"⚠️ Zatən var idi: {', '.join(already_exists)}"
         
     await update.message.reply_text(response, parse_mode="Markdown")
 
@@ -125,14 +125,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except: pass
 
     text = (
-        f"✨ **Sᴀʟᴀᴍ, {user.first_name}!**\n\n"
-        f"🛡️ ᴍəɴ **ǫʀᴜᴘʟᴀʀı** ᴛəᴍɪᴢ ꜱᴀxʟᴀʏᴀɴ ✨\n"
+        f"✨ Sᴀʟᴀᴍ, {user.first_name}!\n\n"
+        f"🛡️ ᴍəɴ ǫʀᴜᴘʟᴀʀı ᴛəᴍɪᴢ ꜱᴀxʟᴀʏᴀɴ ✨\n"
         f"🚀 ᴘʀᴏꜰᴇꜱɪʏᴏɴᴀʟ ᴍᴏᴅᴇʀᴀᴛᴏʀ ʙᴏᴛᴀᴍ.\n\n"
-        f"💎 **ɴə ᴇᴅə ʙɪʟəʀəᴍ?**\n"
+        f"💎 ɴə ᴇᴅə ʙɪʟəʀəᴍ?\n"
         f"└─ ꜱöʏÜşʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ ᴛəᴍɪᴢʟəʏɪʀəᴍ\n"
         f"└─ ʟɪɴᴋʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ sɪʟɪʀəᴍ\n"
-        f"└─ ꜱᴛɪᴋᴇʀ, ɢɪꜰ ᴠə səsʟɪ ᴍᴇsᴀᴊʟᴀʀı ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
-        f"⚙️ *ʙᴏᴛᴜ ɪşʟəᴛᴍəᴋ ÜÇÜɴ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪʙ ᴀᴅᴍɪɴ ᴠᴇʀɪɴ!*"
+        f"└─ ꜱᴛɪᴋᴇʀ, ɢɪꜰ ᴠə səsʟɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
+        f"⚙️ ʙᴏᴛᴜ ɪşʟəᴛᴍəᴋ ÜÇÜɴ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪʙ ᴀᴅᴍɪɴ ᴠᴇʀɪɴ!"
     )
     keyboard = [
         [InlineKeyboardButton("📚 ᴋᴏᴍᴀɴᴅᴀʟᴀʀ ᴠə ᴋöᴍəᴋ", callback_data="show_help")],
@@ -150,11 +150,11 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if query.data == "show_help":
         help_text = (
-            "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n"
+            "📜 ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:\n\n"
             "🔹 /stiker on/off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙʟᴏᴋ\n"
             "🔹 /seslimesaj on/off - Səsli mesaj ʙʟᴏᴋ\n"
             "🔹 /icaze - İstifadəçiyə yetki ver (Reply ilə)\n"
-            "📌 *Linklər avtomatik silinir.*"
+            "📌 Linklər avtomatik silinir."
         )
         await query.message.edit_text(help_text, parse_mode="Markdown")
         
@@ -163,7 +163,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("❌ Bu menyu yalnız bot sahibləri üçündür!", show_alert=True)
             return
         owner_text = (
-            "👑 **ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:**\n\n"
+            "👑 ꜱᴀʜɪʙ ÖZƏʟ ᴍᴇɴʏᴜꜱᴜ:\n\n"
             "🔹 /pisseyler - Söyüş siyahısını gör\n"
             "🔹 /mesajisil - Reply atılan mesajı sil\n"
             "🔹 /pissozplus - Çoxlu söyüş əlavə et\n"
@@ -176,26 +176,26 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def stiker_control(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private": return
     if not await has_permission(update):
-        await update.message.reply_text("❌ **ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!**")
+        await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!")
         return
     
     chat_id = update.effective_chat.id
     if chat_id not in group_settings: group_settings[chat_id] = {"sticker": False, "voice": False, "allowed": []}
     
     status = context.args[0].lower() if context.args else ""
-    if status == "on":
+    if status == "off": # FUNKSIYA YERİ DƏYİŞDİRİLDİ: off artıq bağlayır
         group_settings[chat_id]["sticker"] = True
-        await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**")
-    elif status == "off":
+        await update.message.reply_text("🚫 ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!")
+    elif status == "on": # FUNKSIYA YERİ DƏYİŞDİRİLDİ: on artıq icazə verir
         group_settings[chat_id]["sticker"] = False
-        await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**")
+        await update.message.reply_text("✅ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.")
     else:
         await update.message.reply_text("İstifadə: `/stiker on` və ya `/stiker off`", parse_mode="Markdown")
 
 async def voice_control(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private": return
     if not await has_permission(update):
-        await update.message.reply_text("❌ **ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!**")
+        await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!")
         return
     
     chat_id = update.effective_chat.id
@@ -204,10 +204,10 @@ async def voice_control(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status = context.args[0].lower() if context.args else ""
     if status == "off": # Sənin istədiyin kimi /seslimesaj off yazanda silsin
         group_settings[chat_id]["voice"] = True
-        await update.message.reply_text("🚫 **səsʟɪ ᴍᴇsᴀᴊʟᴀʀ ʙᴀɢʟᴀɴᴅı!**")
+        await update.message.reply_text("🚫 səsʟɪ ᴍᴇsᴀᴊʟᴀʀ ʙᴀɢʟᴀɴᴅı!")
     elif status == "on":
         group_settings[chat_id]["voice"] = False
-        await update.message.reply_text("✅ **səsʟɪ ᴍᴇsᴀᴊʟᴀʀᴀ ɪᴄᴀᴢə ᴠᴇʀɪʟᴅɪ.**")
+        await update.message.reply_text("✅ səsʟɪ ᴍᴇsᴀᴊʟᴀʀᴀ ɪᴄᴀᴢə ᴠᴇʀɪʟᴅɪ.")
     else:
         await update.message.reply_text("İstifadə: `/seslimesaj off` (bağlamaq) və ya `/seslimesaj on` (açmaq)")
 
@@ -276,7 +276,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /stiker on/off\n🔹 /seslimesaj on/off\n🔹 /icaze (reply)"
+    help_text = "📜 ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:\n\n🔹 /stiker on/off\n🔹 /seslimesaj on/off\n🔹 /icaze (reply)"
     await update.message.reply_text(help_text, parse_mode="Markdown")
 
 def main():
