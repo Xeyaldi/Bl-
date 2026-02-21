@@ -1,4 +1,4 @@
-İmport sys
+import sys
 from types import ModuleType
 
 # --- HEROKU PYTHON 3.13+ XƏTASI ÜÇÜN YAMAQ ---
