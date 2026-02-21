@@ -10,32 +10,47 @@ except ImportError:
 # ---------------------------------------------
 
 import logging
+import re
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
 # --- AYARLAR ---
-# İki sahibin ID-si bura əlavə edildi
-OWNERS = [8024893255] # Bura lazım olsa başqa ID-lər də vergüllə əlavə edilə bilər
+OWNERS = [8024893255] 
 START_STICKER_ID = "CAACAgQAAxkBAAEQhcppkc-7kbd_oDn4S9MV6T5vv-TL9AACQhgAAiRYeVGtiXa89ZuMAzoE"
 
-# Siyahı boşdur
 BANNED_WORDS = []
 
-group_locks = {}
+# Qrup ayarlarını və icazəli istifadəçiləri saxlamaq üçün
+group_settings = {} # {chat_id: {"sticker": bool, "voice": bool, "allowed": [user_ids]}}
 
 async def post_init(application: Application):
     commands = [
         BotCommand("start", "ʙᴏᴛᴜ ʙᴀşʟᴀᴅıɴ"),
         BotCommand("help", "ᴋöᴍəᴋ ᴍᴇɴʏᴜꜱᴜ"),
-        BotCommand("on", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)"),
-        BotCommand("off", "ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)")
+        BotCommand("stiker", "on/off - ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ (Qᴜʀᴜᴄᴜ)"),
+        BotCommand("seslimesaj", "on/off - ꜱəsʟɪ ᴍᴇsᴀᴊʟᴀʀı ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)"),
+        BotCommand("icaze", "İstifadəçiyə yetki ver (Reply)")
     ]
     await application.bot.set_my_commands(commands)
 
-async def is_creator(update: Update):
+# --- YETKİ YOXLAMA FUNKSİYASI ---
+async def has_permission(update: Update):
+    chat_id = update.effective_chat.id
+    user_id = update.effective_user.id
+    
+    # Bot sahibi həmişə yetkilidir
+    if user_id in OWNERS: return True
     if update.effective_chat.type == "private": return True
-    member = await update.effective_chat.get_member(update.effective_user.id)
-    return member.status == 'creator'
+    
+    # Qrup qurucusu yoxlanışı
+    member = await update.effective_chat.get_member(user_id)
+    if member.status == 'creator': return True
+    
+    # /icaze verilmiş şəxslər
+    allowed_users = group_settings.get(chat_id, {}).get("allowed", [])
+    if user_id in allowed_users: return True
+    
+    return False
 
 # --- SAHİB YOXLANILMASI ---
 def is_owner(user_id):
@@ -115,7 +130,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🚀 ᴘʀᴏꜰᴇꜱɪʏᴏɴᴀʟ ᴍᴏᴅᴇʀᴀᴛᴏʀ ʙᴏᴛᴀᴍ.\n\n"
         f"💎 **ɴə ᴇᴅə ʙɪʟəʀəᴍ?**\n"
         f"└─ ꜱöʏÜşʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ ᴛəᴍɪᴢʟəʏɪʀəᴍ\n"
-        f"└─ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀɪ ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
+        f"└─ ʟɪɴᴋʟəʀɪ ᴀᴠᴛᴏᴍᴀᴛɪᴋ sɪʟɪʀəᴍ\n"
+        f"└─ ꜱᴛɪᴋᴇʀ, ɢɪꜰ ᴠə səsʟɪ ᴍᴇsᴀᴊʟᴀʀı ᴍəʜᴅᴜᴅʟᴀşᴅıʀıʀᴀᴍ\n\n"
         f"⚙️ *ʙᴏᴛᴜ ɪşʟəᴛᴍəᴋ ÜÇÜɴ ǫʀᴜᴘᴀ Əʟᴀᴠə ᴇᴅɪʙ ᴀᴅᴍɪɴ ᴠᴇʀɪɴ!*"
     )
     keyboard = [
@@ -133,7 +149,13 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     
     if query.data == "show_help":
-        help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
+        help_text = (
+            "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n"
+            "🔹 /stiker on/off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙʟᴏᴋ\n"
+            "🔹 /seslimesaj on/off - Səsli mesaj ʙʟᴏᴋ\n"
+            "🔹 /icaze - İstifadəçiyə yetki ver (Reply ilə)\n"
+            "📌 *Linklər avtomatik silinir.*"
+        )
         await query.message.edit_text(help_text, parse_mode="Markdown")
         
     elif query.data == "owner_menu":
@@ -149,38 +171,99 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await query.message.edit_text(owner_text, parse_mode="Markdown")
 
-# --- DİGƏR FUNKSİYALAR ---
+# --- YENİ FUNKSİYALAR (STIKER, SESLİ, ICAZE) ---
 
-async def stiker_on(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type == "private":
-        await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
+async def stiker_control(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type == "private": return
+    if not await has_permission(update):
+        await update.message.reply_text("❌ **ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!**")
         return
-    if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
-        return
-    group_locks[update.effective_chat.id] = True
-    await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**")
+    
+    chat_id = update.effective_chat.id
+    if chat_id not in group_settings: group_settings[chat_id] = {"sticker": False, "voice": False, "allowed": []}
+    
+    status = context.args[0].lower() if context.args else ""
+    if status == "on":
+        group_settings[chat_id]["sticker"] = True
+        await update.message.reply_text("🚫 **ʙÜᴛÜɴ ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ-ʟəʀ ʙᴀɢʟᴀɴᴅı!**")
+    elif status == "off":
+        group_settings[chat_id]["sticker"] = False
+        await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**")
+    else:
+        await update.message.reply_text("İstifadə: `/stiker on` və ya `/stiker off`", parse_mode="Markdown")
 
-async def stiker_off(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type == "private":
-        await update.message.reply_text("❌ ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ÜÇÜɴᴅÜʀ!")
+async def voice_control(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type == "private": return
+    if not await has_permission(update):
+        await update.message.reply_text("❌ **ʙᴜ ᴋᴏᴍᴀɴᴅᴀ ꜱᴀᴅəᴄə ǫʀᴜᴘ ǫᴜʀᴜᴄᴜꜱᴜ ɪsᴛɪꜰᴀᴅə ᴇᴅə ʙɪʟəʀ!**")
         return
-    if not await is_creator(update):
-        await update.message.reply_text("❌ **ʙᴜ əᴍʀ ʏᴀʟɴıᴢ ǫᴜʀᴜᴄᴜ ÜÇÜɴᴅÜʀ!**")
+    
+    chat_id = update.effective_chat.id
+    if chat_id not in group_settings: group_settings[chat_id] = {"sticker": False, "voice": False, "allowed": []}
+    
+    status = context.args[0].lower() if context.args else ""
+    if status == "off": # Sənin istədiyin kimi /seslimesaj off yazanda silsin
+        group_settings[chat_id]["voice"] = True
+        await update.message.reply_text("🚫 **səsʟɪ ᴍᴇsᴀᴊʟᴀʀ ʙᴀɢʟᴀɴᴅı!**")
+    elif status == "on":
+        group_settings[chat_id]["voice"] = False
+        await update.message.reply_text("✅ **səsʟɪ ᴍᴇsᴀᴊʟᴀʀᴀ ɪᴄᴀᴢə ᴠᴇʀɪʟᴅɪ.**")
+    else:
+        await update.message.reply_text("İstifadə: `/seslimesaj off` (bağlamaq) və ya `/seslimesaj on` (açmaq)")
+
+async def give_permission(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await has_permission(update):
+        await update.message.reply_text("❌ Bu komandanı ancaq qurucu işlədə bilər.")
         return
-    group_locks[update.effective_chat.id] = False
-    await update.message.reply_text("✅ **ꜱᴛɪᴋᴇʀ ᴠə ɢɪꜰ ɪᴄᴀᴢəꜱɪ ᴠᴇʀɪʟᴅɪ.**")
+    if not update.message.reply_to_message:
+        await update.message.reply_text("Yetki vermək üçün istifadəçinin mesajına reply atın.")
+        return
+    
+    chat_id = update.effective_chat.id
+    new_user = update.message.reply_to_message.from_user.id
+    
+    if chat_id not in group_settings: group_settings[chat_id] = {"sticker": False, "voice": False, "allowed": []}
+    if new_user not in group_settings[chat_id]["allowed"]:
+        group_settings[chat_id]["allowed"].append(new_user)
+        await update.message.reply_text(f"✅ {update.message.reply_to_message.from_user.first_name} artıq botu idarə edə bilər.")
+    else:
+        await update.message.reply_text("Bu şəxs artıq yetkilidir.")
+
+# --- MESAJ İDARƏÇİSİ ---
 
 async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if not msg or not msg.from_user: return
     chat_id = update.effective_chat.id
+    user_id = msg.from_user.id
     
-    if group_locks.get(chat_id, False) and (msg.sticker or msg.animation):
-        try: await msg.delete()
-        except: pass
-        return
+    # Qurucu, Sahib və ya İcazəlilərə toxunma
+    is_privileged = await has_permission(update)
+    
+    # 1. Link Silmə (Hər kəs üçün, adminlər xaric)
+    if not is_privileged and msg.text:
+        links = re.findall(r'(https?://[^\s]+|t\.me/[^\s]+)', msg.text.lower())
+        if links:
+            try: 
+                await msg.delete()
+                return
+            except: pass
 
+    # 2. Stiker/Gif Blok
+    if not is_privileged and group_settings.get(chat_id, {}).get("sticker", False):
+        if msg.sticker or msg.animation:
+            try: await msg.delete()
+            except: pass
+            return
+
+    # 3. Səsli Mesaj Blok
+    if not is_privileged and group_settings.get(chat_id, {}).get("voice", False):
+        if msg.voice or msg.video_note:
+            try: await msg.delete()
+            except: pass
+            return
+
+    # 4. Söyüş Silmə
     if msg.text:
         text_lower = msg.text.lower()
         for word in BANNED_WORDS:
@@ -193,7 +276,7 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /on - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ʙᴀɢʟᴀ (Qᴜʀᴜᴄᴜ)\n🔹 /off - ꜱᴛɪᴋᴇʀ/ɢɪꜰ ᴀᴄ (Qᴜʀᴜᴄᴜ)"
+    help_text = "📜 **ʙᴏᴛ ᴋᴏᴍᴀɴᴅᴀʟᴀʀı:**\n\n🔹 /stiker on/off\n🔹 /seslimesaj on/off\n🔹 /icaze (reply)"
     await update.message.reply_text(help_text, parse_mode="Markdown")
 
 def main():
@@ -202,8 +285,9 @@ def main():
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("on", stiker_on))
-    app.add_handler(CommandHandler("off", stiker_off))
+    app.add_handler(CommandHandler("stiker", stiker_control))
+    app.add_handler(CommandHandler("seslimesaj", voice_control))
+    app.add_handler(CommandHandler("icaze", give_permission))
     
     app.add_handler(CommandHandler("pisseyler", pisseyler))
     app.add_handler(CommandHandler("mesajisil", mesajisil))
